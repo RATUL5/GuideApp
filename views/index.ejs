@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html ng-app='guide'>
+  <head>
+    <title>Your Guide To city</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <style>
+      
+  </style>
+  <body>
+      <nav class="navbar navbar-default">
+      	 <div class="container-fluid">
+      	 	<div class="navbar-header">
+      	 		<a ui-sref='home' class="navbar-brand">CityGuide</a>
+      	 	</div>
+      	 	<div>
+      	 		<ul class="nav navbar-nav navbar-right">
+      	 			<li><a ui-sref='about'>About</a></li>
+      	 			<li><a ui-sref='opinion'>Opinion</a></li>
+      	 		</ul>
+      	 	</div>
+      	 </div>
+      </nav>
+      
+      <!--<div class="row">
+        <div class="col-md-4">
+          <h3><strong>Categories</strong></h3>
+          <ul class="nav nav-tabs nav-stacked">
+            <li><a ui-sref="culture">Culture</a></li>
+            <li><a ui-sref="Science">Science</a></li>
+          </ul>
+        </div>-->
+      <div class="row">
+        <div class="col-md-4" ng-controller="categoryCtrl">
+           <ul class="nav nav-tabs nav-stacked">
+             <li ng-repeat="category in categories">
+               <a ui-sref='culture({categories:category})'>{{category}}</a>
+             </li>
+           </ul>
+        </div>
+
+        <!--view goes here-->
+        
+        <div class="col-md-6">
+            <ui-view></ui-view>
+        </div>
+      </div>
+     
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-resource.min.js"></script>
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    
+    <script type="text/ng-template" id="/home.html">
+    	<div class="container">
+    		     <ul>
+              <li ng-repeat='guide in guides'>
+      					
+                    <h2><strong>{{guide.title}}</strong></h2>
+                    <img src="/images/{{guide.img}}" style="max-width:250px">
+                    <hr>
+                    <p>{{guide.body| limitTo:100}}</p>     
+                    <a ui-sref="guideView({id:guide._id})">show details</a>
+                    
+              </li>
+    				</ul>
+    	</div>
+    </script>
+
+    <script type="text/ng-template" id="/about.html">
+      <img src="/images/test.jpg">
+      <h4>THis is about page</h4>
+    </script>
+
+    
+
+    <script type="text/ng-template" id="/categories.html">
+        <ul>
+          <li ng-repeat="guide in guidesByCategory">
+            <h2><strong>{{guide.title}}</strong></h2>
+              <img src="/images/{{guide.img}}" style="max-width:250px">
+              <hr>
+              <p>{{guide.body| limitTo:100}}</p>
+          </li>
+        </ul>
+    </script>
+    <script type="text/ng-template" id="/guideView.html">
+      {{blog.title}} 
+    </script>
+
+    <script>
+    	angular.module('guide',['ui.router','ngResource'])
+    	   .factory('Guide',function($resource){
+    	   	    return $resource('/guides/:id',{id:'@_id'},{update:{method:'PUT'}});
+    	   })
+         .factory('Categories',function($resource){
+              return $resource('/categories/:categories',null);
+         })
+
+    	   .config(function($stateProvider,$urlRouterProvider){
+    	   	   $stateProvider
+    	   	      .state('home',{
+    	   	      	  url:'/guides',
+    	   	      	  templateUrl:'/home.html',
+    	   	      	  controller:'homeCtrl'
+    	   	      })
+                .state('guideView',{
+                  url:'/guides:id',
+                  templateUrl:'/guideView.html',
+                  controller:'viewCtrl'
+                })
+
+                .state('about',{
+                  url:'/about',
+                  templateUrl:'/about.html'
+                })
+                .state('opinion',{
+                  url:'/opinion',
+                  template:'<h3>Post your opinion</h3>'
+                })
+                .state('culture',{
+                  url:'/categories/:categories',
+                  templateUrl:'/categories.html',
+                  controller:'categoryCtrl2'
+                });
+
+    	   	   $urlRouterProvider.otherwise('home'); 
+    	   })
+           
+           .controller('homeCtrl',['Guide','$scope',function(Guide,$scope){
+           	   $scope.guides=Guide.query();
+           }])
+
+           .controller('categoryCtrl',['$scope',function($scope){
+               $scope.categories=['culture','science'];
+           }])
+
+           .controller('categoryCtrl2',['Categories','$scope','$stateParams',function(Categories,$scope,$stateParams){
+               $scope.guidesByCategory=Categories.query({categories:$stateParams.categories});
+           }])
+           .controller('viewCtrl',['Guide','$scope','$stateParams',function(Guide,$scope,$stateParams){
+              $scope.blog=Guide.get({id:$stateParams.id});
+           }]);
+
+    </script>      
+  </body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
